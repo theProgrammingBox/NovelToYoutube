@@ -109,7 +109,7 @@ async function uploadToYouTube(mp4Path, uploadPage, uploadTitle) {
         "#html-body > ytcp-uploads-still-processing-dialog, #html-body > ytcp-video-share-dialog"
     );
 
-    console.log(`Uploaded${uploadTitle} to YouTube!`);
+    console.log(`Uploaded ${uploadTitle} to YouTube!`);
     fs.unlinkSync(mp4Path, (err) => {
         if (err) throw err;
         console.log(`${uploadTitle}.mp4 deleted!`);
