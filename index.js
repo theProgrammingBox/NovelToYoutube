@@ -146,7 +146,7 @@ async function GetChapter(uploadTile, chapterLink) {
         let duration = getMP3Duration(fs.readFileSync(mp3Path)) * 0.001;
         new ffmpeg(mp3Path)
             .setFfmpegPath(FfmpegPath)
-            .input("./13a653f3-961d-4991-8485-a989fc3c132f__50.jpg")
+            .input(ImagePath)
             .inputFPS(1 / duration)
             .loop(duration)
             .save(filePath)
