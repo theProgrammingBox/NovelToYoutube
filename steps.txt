@@ -1,5 +1,8 @@
 npm i puppeteer
 npm install dotenv --save
+npm install gtts
+npm install fluent-ffmpeg
+npm install --save get-mp3-duration
 
 make .env file
 store the playlist link that you will store the youtube videos in into PLAYLIST_LINK

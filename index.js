@@ -1,7 +1,9 @@
 const puppeteer = require("puppeteer");
-const fs = require('fs');
 require('dotenv').config();
-var readlineSync = require('readline-sync');
+const fs = require('fs');
+const gTTS = require("gtts");
+var ffmpeg = require("fluent-ffmpeg");
+const getMP3Duration = require('get-mp3-duration')
 
 const PlaylistLink = process.env.PLAYLIST_LINK;
 const Email = process.env.EMAIL;
@@ -11,6 +13,8 @@ const NovelLinkPrefix = process.env.NOVEL_LINK_PREFIX;
 const NovelLinkSuffix = process.env.NOVEL_LINK_SUFFIX;
 const TextPathSelector = process.env.TEXT_PATH_SELECTOR;
 const TitlePathSelector = process.env.TITLE_PATH_SELECTOR;
+const FfmpegPath = process.env.FFMPEG_PATH;
+const ImagePath = process.env.IMAGE_PATH;
 
 console.log("PlaylistLink:", PlaylistLink);
 console.log("Email:", Email);
@@ -20,6 +24,8 @@ console.log("NovelLinkPrefix:", NovelLinkPrefix);
 console.log("NovelLinkSuffix:", NovelLinkSuffix);
 console.log("TextPathSelector:", TextPathSelector);
 console.log("TitlePathSelector:", TitlePathSelector);
+console.log("FfmpegPath:", FfmpegPath);
+console.log("ImagePath:", ImagePath);
 console.log();
 
 async function GetAllUploadedChapters() {
@@ -134,12 +140,24 @@ async function GetChapter(uploadTile, chapterLink) {
     }, TitlePathSelector);
 
     await browser.close();
-    
-    let index = texts.findIndex(text => text.includes(chapterTitle));
-    if (index !== -1) {
-        texts = texts.slice(index + 1);
-    }
-    console.log(`${chapterTitle} ${texts.join(" ")}`);
+    let mp3Path = `./${uploadTile}.mp3`;
+    await new gTTS(`${chapterTitle} ${texts.join(" ")}`).save(mp3Path, (err) => {
+        if (err) { throw err; }
+        let duration = getMP3Duration(fs.readFileSync(mp3Path)) * 0.001;
+        new ffmpeg(mp3Path)
+            .setFfmpegPath(FfmpegPath)
+            .input("./13a653f3-961d-4991-8485-a989fc3c132f__50.jpg")
+            .inputFPS(1 / duration)
+            .loop(duration)
+            .save(filePath)
+            .on("end", function () {
+                fs.unlink(mp3Path, (err) => {
+                    if (err) { throw err; }
+                    console.log(`Chapter ${chapter} saved`);
+                    textToMp4Chapter(chapter + numberOfThreads);
+                });
+            }).on("error", function (err) { throw err; });
+    });
 }
 
 async function UploadChapters() {
