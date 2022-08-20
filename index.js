@@ -26,7 +26,7 @@ console.log("TextPathSelector:", TextPathSelector);
 console.log("TitlePathSelector:", TitlePathSelector);
 console.log("FfmpegPath:", FfmpegPath);
 console.log("ImagePath:", ImagePath);
-console.log();
+console.log("\n");
 
 async function GetAllUploadedChapters() {
     const browser = await puppeteer.launch({ headless: true });
@@ -140,24 +140,29 @@ async function GetChapter(uploadTile, chapterLink) {
     }, TitlePathSelector);
 
     await browser.close();
+    
+    console.log(`${uploadTile} text recieved!`);
     let mp3Path = `./${uploadTile}.mp3`;
-    await new gTTS(`${chapterTitle} ${texts.join(" ")}`).save(mp3Path, (err) => {
+    (async () => {
+        await new gTTS(`${chapterTitle} ${texts.join(" ")}`).save(mp3Path, (err) => {
         if (err) { throw err; }
+        console.log(`${uploadTile}.mp3 saved!`);
         let duration = getMP3Duration(fs.readFileSync(mp3Path)) * 0.001;
         new ffmpeg(mp3Path)
             .setFfmpegPath(FfmpegPath)
             .input(ImagePath)
             .inputFPS(1 / duration)
             .loop(duration)
-            .save(filePath)
+            .save(`./${uploadTile}.mp4`)
             .on("end", function () {
                 fs.unlink(mp3Path, (err) => {
                     if (err) { throw err; }
-                    console.log(`Chapter ${chapter} saved`);
-                    textToMp4Chapter(chapter + numberOfThreads);
+                    console.log(`${uploadTile}.mp3 deleted!`);
+                    console.log(`${uploadTile}.mp4 saved!`);
                 });
             }).on("error", function (err) { throw err; });
-    });
+        });
+    })();
 }
 
 async function UploadChapters() {
@@ -184,7 +189,7 @@ async function UploadChapters() {
     for (let i = 0; i < allUploadedChapters.length; i++) {
         console.log(allUploadedChapters[i]);
     }
-    console.log();
+    console.log("\n");;
 
     console.log("Searching for the first chapter to upload, please wait...");
     let chapter = 0;
