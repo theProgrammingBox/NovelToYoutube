@@ -1,0 +1,11 @@
+npm i puppeteer
+npm install dotenv --save
+
+make .env file
+store the playlist link that you will store the youtube videos in into PLAYLIST_LINK
+ex: https://www.youtube.com/playlist?list=PL6y0twj4lW_oqJ9QQKZQxlYkqVxm9fUjX
+store the website link prefix that you will use to access the website into NOVEL_LINK_PREFIX
+ex: https://www.website.com/novel/chapter-
+store the website link suffix that you will use to access the website into NOVEL_LINK_SUFFIX
+ex: .html
+
