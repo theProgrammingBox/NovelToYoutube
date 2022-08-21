@@ -13,6 +13,7 @@ const NovelTitle = process.env.NOVEL_TITLE;
 const NovelLinkPrefix = process.env.NOVEL_LINK_PREFIX;
 const NovelLinkSuffix = process.env.NOVEL_LINK_SUFFIX;
 const TextPathSelector = process.env.TEXT_PATH_SELECTOR;
+const TextPathSelectorTwo = process.env.TEXT_PATH_SELECTOR_TWO;
 const TitlePathSelector = process.env.TITLE_PATH_SELECTOR;
 const FfmpegPath = process.env.FFMPEG_PATH;
 const ImagePath = process.env.IMAGE_PATH;
@@ -25,6 +26,7 @@ console.log("NovelTitle:", NovelTitle);
 console.log("NovelLinkPrefix:", NovelLinkPrefix);
 console.log("NovelLinkSuffix:", NovelLinkSuffix);
 console.log("TextPathSelector:", TextPathSelector);
+console.log("TextPathSelectorTwo:", TextPathSelectorTwo);
 console.log("TitlePathSelector:", TitlePathSelector);
 console.log("FfmpegPath:", FfmpegPath);
 console.log("ImagePath:", ImagePath);
@@ -186,14 +188,83 @@ async function GetChapter(uploadPage, allUploadedChapters, chapterNumber) {
         }, TextPathSelector);
 
         if (texts.length === 0) {
-            console.log("No text found in chapter:", chapterLink);
-            await browser.close();
-            return;
+            texts = await page.evaluate((TextPathSelectorTwo) => {
+                return Array.from(document.querySelectorAll(TextPathSelectorTwo))
+                    .filter(p => !p.querySelector("a")) // blacklist items, currently pure p allowed
+                    .filter(p => !p.querySelector("abbr"))
+                    .filter(p => !p.querySelector("area"))
+                    .filter(p => !p.querySelector("audio"))
+                    .filter(p => !p.querySelector("b"))
+                    .filter(p => !p.querySelector("bdi"))
+                    .filter(p => !p.querySelector("bdo"))
+                    .filter(p => !p.querySelector("br"))
+                    .filter(p => !p.querySelector("button"))
+                    .filter(p => !p.querySelector("canvas"))
+                    .filter(p => !p.querySelector("cite"))
+                    .filter(p => !p.querySelector("code"))
+                    .filter(p => !p.querySelector("command"))
+                    .filter(p => !p.querySelector("datalist"))
+                    .filter(p => !p.querySelector("del"))
+                    .filter(p => !p.querySelector("dfn"))
+                    .filter(p => !p.querySelector("em"))
+                    .filter(p => !p.querySelector("embed"))
+                    .filter(p => !p.querySelector("i"))
+                    .filter(p => !p.querySelector("iframe"))
+                    .filter(p => !p.querySelector("img"))
+                    .filter(p => !p.querySelector("input"))
+                    .filter(p => !p.querySelector("ins"))
+                    .filter(p => !p.querySelector("kbd"))
+                    .filter(p => !p.querySelector("keygen"))
+                    .filter(p => !p.querySelector("label"))
+                    .filter(p => !p.querySelector("map"))
+                    .filter(p => !p.querySelector("mark"))
+                    .filter(p => !p.querySelector("math"))
+                    .filter(p => !p.querySelector("meter"))
+                    .filter(p => !p.querySelector("noscript"))
+                    .filter(p => !p.querySelector("object"))
+                    .filter(p => !p.querySelector("output"))
+                    .filter(p => !p.querySelector("progress"))
+                    .filter(p => !p.querySelector("q"))
+                    .filter(p => !p.querySelector("ruby"))
+                    .filter(p => !p.querySelector("s"))
+                    .filter(p => !p.querySelector("samp"))
+                    .filter(p => !p.querySelector("script"))
+                    .filter(p => !p.querySelector("select"))
+                    .filter(p => !p.querySelector("small"))
+                    .filter(p => !p.querySelector("span"))
+                    .filter(p => !p.querySelector("strong"))
+                    .filter(p => !p.querySelector("sub"))
+                    .filter(p => !p.querySelector("sup"))
+                    .filter(p => !p.querySelector("svg"))
+                    .filter(p => !p.querySelector("textarea"))
+                    .filter(p => !p.querySelector("time"))
+                    .filter(p => !p.querySelector("u"))
+                    .filter(p => !p.querySelector("var"))
+                    .filter(p => !p.querySelector("video"))
+                    .filter(p => !p.querySelector("wbr"))
+                    .filter(p => !p.querySelector("text"))
+                    .map(p => p.innerText);
+            }, TextPathSelectorTwo);
+
+            if (texts.length === 0) {
+                console.log("No text found in chapter:", chapterLink);
+                await browser.close();
+                return;
+            }
         }
 
         let chapterTitle = await page.evaluate((TitlePathSelector) => {
-            return document.querySelector(TitlePathSelector).innerText.split(':')[0].trim();
+            if (document.querySelector(TitlePathSelector)) {
+                return document.querySelector(TitlePathSelector).innerText.split(':')[0].trim();
+            }
         }, TitlePathSelector);
+        if (!chapterTitle) {
+            chapterTitle = await page.evaluate((TitlePathSelectorTwo) => {
+                if (document.querySelector(TitlePathSelectorTwo)) {
+                    return document.querySelector(TitlePathSelectorTwo).innerText.split(':')[0].trim();
+                }
+            }, TitlePathSelectorTwo);
+        }
 
         await browser.close();
 
